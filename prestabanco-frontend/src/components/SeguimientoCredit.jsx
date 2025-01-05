@@ -243,36 +243,42 @@ const SolicitudCreditoForm = ({onSuccessfulSubmit}) => {
               return parseInt(deuda.toString().replace(/\./g, "")); // Eliminar puntos
             })
           };
-          console.log(cleanedData);
-          solicitudService.create(cleanedData).then((response)=> {
-            setFormData({
-                correo: "",
-                telefono: "",
-                nombreArchivos: [],
-                documentos: [],
-                tipoPrestamo: "",
-                antiguedadTrabajo: "",
-                tipoTrabajo: "",
-                valorPropiedad: "",
-                ingresosMensuales: [],
-                deudasMensuales: [],
-                estado: "En Revisión Inicial",
-                usuario: ""
-            });
+          const hasNullDocument = formData.documentos.some((file) => file === null);
+          if (hasNullDocument) {
+            // Mostrar ventana de confirmación si hay documentos nulos
+            if (window.confirm("Hay documentos faltantes, no se podrá continuar con la solicitud. ¿Estás seguro de que deseas enviar la solicitud?")) {
+              console.log(cleanedData);
+              solicitudService.create(cleanedData).then((response)=> {
+                setFormData({
+                    correo: "",
+                    telefono: "",
+                    nombreArchivos: [],
+                    documentos: [],
+                    tipoPrestamo: "",
+                    antiguedadTrabajo: "",
+                    tipoTrabajo: "",
+                    valorPropiedad: "",
+                    ingresosMensuales: [],
+                    deudasMensuales: [],
+                    estado: "En Revisión Inicial",
+                    usuario: ""
+                });
 
-            setIngresosMensuales(Array(12).fill(0));
-            setDeudasMensuales(Array(12).fill(0));
+                setIngresosMensuales(Array(12).fill(0));
+                setDeudasMensuales(Array(12).fill(0));
 
-            if (onSuccessfulSubmit) {
-              alert("Solicitud Creada Exitósamente")
-                onSuccessfulSubmit(); // Llama a la función de éxito
+                if (onSuccessfulSubmit) {
+                  alert("Solicitud Creada Exitósamente")
+                    onSuccessfulSubmit(); // Llama a la función de éxito
+                }
+              }).catch((error) => {
+                console.log(
+                "Ha ocurrido un error al intentar generar la simulacion.",
+                error
+                );
+                });
+              }
             }
-          }).catch((error) => {
-            console.log(
-            "Ha ocurrido un error al intentar generar la simulacion.",
-            error
-            );
-            });
           }
       };
 
@@ -517,12 +523,14 @@ const CreditosEnProceso = ({ solicitudes, fetchSolicitudes }) => {
     };
 
     const handleRechazarCliente = (solicitud) => {
+      if (window.confirm("¿Desea cancelar su solicitud? Esto no se puede deshacer")){
       const solicitudActualizada = { ...solicitud, estado: "Cancelada Por el Cliente" };
           solicitudService.update(solicitudActualizada).then(() => {
             solicitudService.getAll().then((response) =>{
               fetchSolicitudes(response.data);
             });
           });
+        }
     };
       return (
         <div>

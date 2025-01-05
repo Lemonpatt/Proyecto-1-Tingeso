@@ -119,7 +119,7 @@ public class SolicitudPrestamoService {
             double cuotaMensual = montoPrestamo * ((tasaInteresMensual * Math.pow(1 + tasaInteresMensual, pagos)) /
                     (Math.pow(1 + tasaInteresMensual, pagos) - 1));
 
-            return cuotaMensual;
+            return Math.floor(cuotaMensual);
         }
 
     public List<String> TotalCostCredit(SolicitudPrestamo request) {

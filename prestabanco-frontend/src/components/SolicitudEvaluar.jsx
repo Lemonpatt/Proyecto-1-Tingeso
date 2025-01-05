@@ -129,26 +129,29 @@ const SolicitudDetalle = () => {
         // Verifica que todos los campos de evaluación estén completos antes de actualizar el estado
         const { plazo, interes, seguroDegravamen, seguroIncendio, comision, financiamiento} = solicitud;
         if (plazo && interes && seguroDegravamen && seguroIncendio && comision && financiamiento) {
-            solicitudService.getSimulation(solicitud).then((response) => {
-                const solicitudActualizada = {
-                    ...solicitud,
-                    estado: "Pre-Aprobada",
-                    cuotaMensual: response.data
-                };
-                console.log("se encontro el valor de cuotas.", response.data);
-                solicitudService.update(solicitudActualizada).then(() => {
-                    setSolicitud(solicitudActualizada);
+            if (window.confirm("¿Desea guardar la evaluación y pre-aprobar la solicitud?")){
+                solicitudService.getSimulation(solicitud).then((response) => {
+                    const solicitudActualizada = {
+                        ...solicitud,
+                        estado: "Pre-Aprobada",
+                        cuotaMensual: response.data
+                    };
+                    console.log("se encontro el valor de cuotas.", response.data);
+                    solicitudService.update(solicitudActualizada).then(() => {
+                        setSolicitud(solicitudActualizada);
+                    });
+                    solicitudService.getSeguimiento(solicitudActualizada.id).then((response)=>{
+                        setSeguimiento(response.data);
+                        console.log("Seguimiento",response.data);
+                        window.location.reload();
+                    })
                 });
-                solicitudService.getSeguimiento(solicitudActualizada.id).then((response)=>{
-                    setSeguimiento(response.data);
-                    console.log("Seguimiento",response.data);
-                    window.location.reload();
-                })
-            });
+            }
         }
     };
 
     const handleConfirmarSolicitud = () => {
+        
         const solicitudActualizada = { ...solicitud, estado: "En Aprobación Final" };
         solicitudService.update(solicitudActualizada).then(() => {
             setSolicitud(solicitudActualizada);
@@ -161,6 +164,7 @@ const SolicitudDetalle = () => {
     };
 
     const handleConfirmarSolicitudFinal = () => {
+        if (window.confirm("¿Aprobar de manera final la solicitud?")){
         const solicitudActualizada = { ...solicitud, estado: "Aprobada" };
         solicitudService.update(solicitudActualizada).then(() => {
             setSolicitud(solicitudActualizada);
@@ -170,6 +174,7 @@ const SolicitudDetalle = () => {
             console.log("Seguimiento",response.data);
             window.location.reload();
         })
+    }
     };
 
     const handleEvaluar = () => {
@@ -216,11 +221,13 @@ const SolicitudDetalle = () => {
     };
 
     const handleRechazarCliente = () => {
+        if (window.confirm("¿Desea cancelar su solicitud? Esto no se puede deshacer")){
         const solicitudActualizada = { ...solicitud, estado: "Cancelada Por el Cliente" };
             solicitudService.update(solicitudActualizada).then(() => {
                 setSolicitud(solicitudActualizada);
                 window.location.reload();
             });
+        }
     };
 
     const handleDesembolso = () => {
